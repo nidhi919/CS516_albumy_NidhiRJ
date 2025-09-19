@@ -1,100 +1,76 @@
-CS516_albumy_NidhiRJ
+# CS516 Homework 1
 
-Forked from greyli/albumy
-.
-This version includes ML-powered features:
+**Forked from:** [greyli/albumy](https://github.com/greyli/albumy)  
+**Changes:** Added ML features for alternate text generation and image search.
 
-Automatic alternative text generation for uploaded images using Azure Vision API.
+---
 
-Image search by objects detected in images using Azure Vision API.
+## Project Overview
 
-Features
+This project extends the Albumy web application by adding machine learning features.
 
-Users can upload images and optionally provide descriptions.
+- **Alt Text Generation:** Generates descriptive alternative text using the Azure Vision API if users do not provide their own descriptions.  
+- **Object Detection in images & Image Search:** Detects objects in images, tags them, and tag-based search.
 
-If no description is provided, the app automatically generates alt text.
+The application is built with **Python**, **Flask**, and **SQLAlchemy**, and relies on Azure Vision API for ML functionality.
 
-Uploaded images are automatically analyzed to detect objects for searchable tags.
+---
 
-Users can search for images using keywords corresponding to detected objects.
+## Prerequisites
 
-Requirements
+- Python 3.9+  
+- Azure Vision API subscription (key and endpoint)  
 
-Python 3.10+ (tested on 3.10)
+---
 
-Azure account for Vision API (free tier works)
+## Installation
 
-Install dependencies:
+1. **Clone the repository**
 
-pip install -r requirements.txt
-
-Setup
-
-Clone the repository
-
-git clone https://github.com/nidhi919/CS516_albumy_NidhiRJ.git
-cd CS516_albumy_NidhiRJ
+- git clone https://github.com/nidhi919/CS516_albumy_NidhiRJ.git
+- cd CS516_albumy_NidhiRJ
 
 
-Create a virtual environment
-
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# macOS/Linux
-source venv/bin/activate
-
-
-Install dependencies
-
-pip install -r requirements.txt
+2. **Create a virtual environment**
+- for Windows:
+  python -m venv venv
+- for macOS/Linux:
+  venv\Scripts\activate
+- Then:
+  source venv/bin/activate
 
 
-Configure Azure Vision API
-
-Create an Azure Cognitive Services account if you don’t have one.
-
-Get your endpoint URL and API key.
-
-Create a file called .env in the root directory with the following content:
-
-AZURE_VISION_KEY=your_api_key_here
-AZURE_VISION_ENDPOINT=your_endpoint_here
+3. **Install dependencies**
+- pip install -r requirements.txt
 
 
-Note: Do not commit .env to the repository.
+4. **Configure Azure Vision API**
+- Create an Azure Cognitive Services account if you don’t have one.
+- Get your endpoint URL and API key.
 
-Initialize the database
+5. **Create a file called .env in the root directory with the following content:**
+- AZURE_VISION_KEY=your_api_key_here
+- AZURE_VISION_ENDPOINT=your_endpoint_here
 
-flask db upgrade
-
-
-Run the application
-
-flask run
+6. **Initialize the database**
+- flask db upgrade
 
 
-Open http://127.0.0.1:5000
- in your browser.
+7. **Run the albumy application**
+- flask run
 
-Usage
+8. **Open http://127.0.0.1:5000 in your browser**
 
-Upload images: Go to /upload and upload a photo.
+# How to use it:
 
-View alt text: Inspect the image or hover over it (screen readers will use alt text).
+1. Upload images: Go to /upload and upload a photo.
 
-Search by object: Use the search bar on the homepage to find images by detected objects.
+2. View alt text: On the photo sidebar, along with the tags listed.
 
-Notes
+3. Search by tag: Use the search bar on the homepage to find images by detected tags of objects in uploaded image.
 
-The app uses Azure Vision API for both alt-text generation and object detection.
 
-Uploaded images are stored locally in uploads/.
+# Credits
+- Original albumy project: greyli/albumy
+- Azure vision API
 
-Profile pictures do not use automatic alt-text generation.
-
-Credits
-
-Original albumy project: greyli/albumy
-
-Azure Cognitive Services Vision API: documentation
