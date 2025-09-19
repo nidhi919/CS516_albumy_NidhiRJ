@@ -5,6 +5,7 @@
     :copyright: © 2018 Grey Li <withlihui@gmail.com>
     :license: MIT, see LICENSE for more details.
 """
+
 import os
 from datetime import datetime
 
@@ -240,6 +241,10 @@ class Photo(db.Model):
     collectors = db.relationship('Collect', back_populates='collected', cascade='all')
     tags = db.relationship('Tag', secondary=tagging, back_populates='photos')
 
+    @property
+    def tag_string(self):
+        """Return all tag names as a single string for Whooshee indexing."""
+        return ' '.join(tag.name for tag in self.tags)
 
 @whooshee.register_model('name')
 class Tag(db.Model):
@@ -293,3 +298,4 @@ def delete_photos(**kwargs):
         path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
         if os.path.exists(path):  # not every filename map a unique file
             os.remove(path)
+

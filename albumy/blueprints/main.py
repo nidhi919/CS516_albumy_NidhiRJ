@@ -22,7 +22,11 @@ from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 from albumy.ml_helpers import generate_alt_text, detect_objects
 from albumy.models import Tag
 
-from image_analysis import generate_alt_text
+#from image_analysis import generate_alt_text
+from image_analysis import generate_alt_text, detect_objects
+from albumy.extensions import whooshee
+
+
 
 
 main_bp = Blueprint('main', __name__)
@@ -52,24 +56,35 @@ def explore():
     return render_template('main/explore.html', photos=photos)
 
 
+
 @main_bp.route('/search')
+@login_required  # keep existing decorators
 def search():
     q = request.args.get('q', '').strip()
-    if q == '':
+    if not q:
         flash('Enter keyword about photo, user or tag.', 'warning')
         return redirect_back()
 
     category = request.args.get('category', 'photo')
-    page = request.args.get('page', 1, type=int)
-    per_page = current_app.config['ALBUMY_SEARCH_RESULT_PER_PAGE']
+
+    # Search logic using SQL directly cause whooshee isn't working for some reason
     if category == 'user':
-        pagination = User.query.whooshee_search(q).paginate(page, per_page)
+        results = User.query.filter(User.username.ilike(f"%{q}%")).all()
     elif category == 'tag':
-        pagination = Tag.query.whooshee_search(q).paginate(page, per_page)
-    else:
-        pagination = Photo.query.whooshee_search(q).paginate(page, per_page)
-    results = pagination.items
-    return render_template('main/search.html', q=q, results=results, pagination=pagination, category=category)
+        results = Tag.query.filter(Tag.name.ilike(f"%{q}%")).all()
+    else:  
+        results = Photo.query.join(Photo.tags).filter(
+            (Photo.description.ilike(f"%{q}%")) | 
+            (Tag.name.ilike(f"%{q}%"))
+        ).all()
+
+    return render_template(
+        'main/search.html',
+        q=q,
+        results=results,
+        pagination=None,  
+        category=category
+    )
 
 
 @main_bp.route('/notifications')
@@ -120,7 +135,6 @@ def get_avatar(filename):
     return send_from_directory(current_app.config['AVATARS_SAVE_PATH'], filename)
 
 
-
 @main_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 @confirm_required
@@ -141,28 +155,28 @@ def upload():
             author=current_user._get_current_object()
         )
 
-       
+        
         image_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
 
-        
+        # Alternative text generation
         alt_text = generate_alt_text(image_path)
-        if not request.form.get('description'):  # only auto-fill if user didn't provide one
+        if not request.form.get('description'):  
             photo.description = alt_text
 
-        
+        # Object detection and tags
         object_tags = detect_objects(image_path)
+        print("DEBUG detected objects:", object_tags)
         for name in object_tags:
             tag = Tag.query.filter_by(name=name).first()
             if not tag:
                 tag = Tag(name=name)
                 db.session.add(tag)
-                db.session.commit()
             if tag not in photo.tags:
                 photo.tags.append(tag)
-        
 
         db.session.add(photo)
         db.session.commit()
+        #whooshee.index_one(photo) whoosee not working!
         flash('Photo uploaded successfully!', 'success')
 
     return render_template('main/upload.html')
