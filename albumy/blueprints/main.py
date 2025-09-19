@@ -19,6 +19,12 @@ from albumy.models import User, Photo, Tag, Follow, Collect, Comment, Notificati
 from albumy.notifications import push_comment_notification, push_collect_notification
 from albumy.utils import rename_image, resize_image, redirect_back, flash_errors
 
+from albumy.ml_helpers import generate_alt_text, detect_objects
+from albumy.models import Tag
+
+from image_analysis import generate_alt_text
+
+
 main_bp = Blueprint('main', __name__)
 
 
@@ -114,6 +120,7 @@ def get_avatar(filename):
     return send_from_directory(current_app.config['AVATARS_SAVE_PATH'], filename)
 
 
+
 @main_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
 @confirm_required
@@ -123,16 +130,41 @@ def upload():
         f = request.files.get('file')
         filename = rename_image(f.filename)
         f.save(os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename))
+        
         filename_s = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['small'])
         filename_m = resize_image(f, filename, current_app.config['ALBUMY_PHOTO_SIZE']['medium'])
+        
         photo = Photo(
             filename=filename,
             filename_s=filename_s,
             filename_m=filename_m,
             author=current_user._get_current_object()
         )
+
+       
+        image_path = os.path.join(current_app.config['ALBUMY_UPLOAD_PATH'], filename)
+
+        
+        alt_text = generate_alt_text(image_path)
+        if not request.form.get('description'):  # only auto-fill if user didn't provide one
+            photo.description = alt_text
+
+        
+        object_tags = detect_objects(image_path)
+        for name in object_tags:
+            tag = Tag.query.filter_by(name=name).first()
+            if not tag:
+                tag = Tag(name=name)
+                db.session.add(tag)
+                db.session.commit()
+            if tag not in photo.tags:
+                photo.tags.append(tag)
+        
+
         db.session.add(photo)
         db.session.commit()
+        flash('Photo uploaded successfully!', 'success')
+
     return render_template('main/upload.html')
 
 
