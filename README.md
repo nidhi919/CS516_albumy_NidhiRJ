@@ -3,6 +3,7 @@
 **Forked from:** [greyli/albumy](https://github.com/greyli/albumy)  
 **Changes:** Added ML features for alternate text generation and image search.
 
+
 ---
 
 ## Project Overview
@@ -11,6 +12,9 @@ This project extends the Albumy web application by adding machine learning featu
 
 - **Alt Text Generation:** Generates descriptive alternative text using the Azure Vision API if users do not provide their own descriptions.  
 - **Object Detection in images & Image Search:** Detects objects in images, tags them, and tag-based search.
+
+- **Alt text gen commit url:** https://github.com/nidhi919/CS516_albumy_NidhiRJ/commit/b7aa65e
+- **Image search commit url:** https://github.com/nidhi919/CS516_albumy_NidhiRJ/commit/5c75da5
 
 The application is built with **Python**, **Flask**, and **SQLAlchemy**, and relies on Azure Vision API for ML functionality.
 
